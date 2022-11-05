@@ -72,7 +72,7 @@ bool onTheLineRight = false;
 int Line1Val = 0;
 int Line2Val = 0;
 
-
+//
 long linelost = 0;
 bool linelostTrig = false;
 
@@ -137,7 +137,7 @@ void loop() {
       
       ultrasonic();
       
-      //update my position
+      //update my position and orientation
       whereAmI();
 
       //read sensors
@@ -153,7 +153,7 @@ void loop() {
       if(inSearchArea and !HoldingBlock){
         // check if robot has set up for running search routine yet
         if (searchStartTrig){
-          // 
+          // spin the robot 90 degrees, recording its new position and direction, turn search start trigger off
           float targetdir[] = {-Direction[1], Direction[0]};
           long prevturn = millis();
           while (!((targetdir[0]-0.05 < Direction[0] and  Direction[0] < targetdir[0]+0.05 ) and (targetdir[1]-0.05 < Direction[1] and Direction[1] < targetdir[1]+0.05 ))){
@@ -166,33 +166,36 @@ void loop() {
           }
           searchStartTrig = false;
         }
+
+        // call search function, which uses updated IR reading and updates robot's position and direction at each loop execution
         if (Search(IRLongVal, &whereAmI)){
-          double long linePosition[] = {Position[0],Position[1]};
-          Approach(&whereAmI);
+          double long linePosition[] = {Position[0],Position[1]}; // record last position on line
+          Approach(&whereAmI); // approach block and grab
           HoldingBlock = true;
-          ReturnToLine(linePosition, &whereAmI);
+          ReturnToLine(linePosition, &whereAmI); // return to line
           setflip = true;
           SearchTrig = false;
         }
-      // if holding the block and in the start Box area go to the correct box and put it in there.
+      
+      // if holding the block and in the start Box area go to the correct box and put it in there
       }else if(HoldingBlock and inStartBox){
         if (BlockMagnetic){
-          //go to red
-          HoldingBlock = false;
-          digitalWrite(MagneticRed, HIGH);
+          //go to red and turn red LED on and green LED off
+          HoldingBlock = false; // block has been dropped
+          digitalWrite(MagneticRed, HIGH); 
           digitalWrite(NonMagneticGreen, LOW);
         }else{
-          //go to green
-          HoldingBlock = false;
+          //go to green and turn green LED on and red LED off
+          HoldingBlock = false; //block has been dropped
           digitalWrite(NonMagneticGreen, HIGH);
           digitalWrite(MagneticRed, LOW);
         }
+
       // follow the line
       }else{
         if (onTheLineLeft or onTheLineRight or onTheLineMid){ //trigger for line lost
           linelostTrig = false;
         }
-        
         if (!onTheLineLeft and onTheLineRight and !onTheLineMid){
           TurnLeft();
         }else if (!onTheLineLeft and onTheLineRight and onTheLineMid){
@@ -203,10 +206,12 @@ void loop() {
           TurnRight();
         }else if (onTheLineMid){
           Forward();
+
         }else{        // cannot see line
           if (inTunnel){
             Serial.print(distance);
             Serial.print(",     ");
+            // use readings from ultrasonic sensor to maintain constant distance from tunnel wall
             if (distance >= 20){
               Forward();
             }else if (distance >= 7){
@@ -219,6 +224,7 @@ void loop() {
           }else if(onRamp){
             Serial.print(distance);
             Serial.print(",     ");
+            // use readings from ultrasonic sensor to maintain constant distance from ramp wall
             if (distance >= 40){
               Forward();
             }else if (distance >= 15){
@@ -229,7 +235,7 @@ void loop() {
               Forward();
             }
           }
-          else{
+          else{ // line has been lost
             if (!linelostTrig){
               linelost = millis();
               linelostTrig = true;
@@ -241,7 +247,8 @@ void loop() {
               }else{
                 TurnLeft();
               }
-            }else if(millis() - linelost < 9000){
+            }
+            else if(millis() - linelost < 9000){
               if(!inStartBox){
                 TurnRight();
               }else{

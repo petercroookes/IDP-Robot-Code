@@ -1,17 +1,20 @@
 void Sequence(){
 }
 
+// calibration values, obtained from rotating robot 90 degreees and creating 
 float RotAngleCalibrated = -0.02;//-0.00248;
 float ForwardRotMultiplyer = 0.41;
 
 void whereAmI(){
+  // if robot is moving, flash yellow LED. Update position and orientation based on previous motor action
   switch(MotorRunType){
     case(0):
+    // stopped
       digitalWrite(Flashing, LOW);
       break;
     case(1):
       //forward
-      Position[0] += Direction[0];
+      Position[0] += Direction[0]; 
       Position[1] += Direction[1];
       digitalWrite(Flashing, HIGH);
 
