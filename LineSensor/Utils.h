@@ -1,13 +1,14 @@
 
-// ultrasonic needs explaing
+// ultrasonic
+// to avoid the processor having to wait for the ultrasonic sensor at each pulse this has been written to run in parrallel to the rest of the program
 void ultrasonic() {
   switch(stage){
-    case 0:
-      digitalWrite(trigPin, LOW);
+    case 0: // stage one set the trig pin low for 2 microseconds
+      digitalWrite(trigPin, LOW); 
       prev = micros();
       stage = 1;
       break;
-    case 1:
+    case 1: // set it high after stage 1
       if (micros() - prev >= 2) {
         digitalWrite(trigPin, HIGH);
       }
@@ -17,10 +18,10 @@ void ultrasonic() {
     case 2:
       if (micros() - prev >= 10) {
         digitalWrite(trigPin, LOW);
-        duration = pulseIn(echoPin, HIGH);
+        duration = pulseIn(echoPin, HIGH); //indetify the duration echo pin is set high and convert to distance
         distance = duration * 0.034 / 2;
       }
-      stage = 0;
+      stage = 0; //reset stage counter to start
       break;
   }
 }
